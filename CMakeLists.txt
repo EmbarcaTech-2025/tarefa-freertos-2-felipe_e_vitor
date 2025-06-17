@@ -1,3 +1,14 @@
+# Generated Cmake Pico project file
+
+cmake_minimum_required(VERSION 3.13)
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Initialise pico_sdk from installed location
+# (note this can come from environment, CMake cache etc)
+
 # == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
     set(USERHOME $ENV{USERPROFILE})
@@ -12,46 +23,66 @@ if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
-set(PICO_BOARD pico CACHE STRING "Board type")
+set(PICO_BOARD pico_w CACHE STRING "Board type")
 
-cmake_minimum_required(VERSION 3.12)
+# Pull in Raspberry Pi Pico SDK (must be before project)
+include(pico_sdk_import.cmake)
+
+project(tarefa-freertos-2-felipe_e_vitor C CXX ASM)
 
 # Set any variables required for importing libraries
 if (DEFINED ENV{FREERTOS_PATH})
   SET(FREERTOS_PATH $ENV{FREERTOS_PATH})
 else()
-  SET(FREERTOS_PATH ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel)
+  SET(FREERTOS_PATH ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS)
 endif()
 
 message("FreeRTOS Kernel located in ${FREERTOS_PATH}")
 
 # Import those libraries
-include(pico_sdk_import.cmake)
 include(${FREERTOS_PATH}/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake)
 
-# Define project
-project(embarcatech-tarefa-freertos-2 C CXX ASM)
-
-# Initialize the Raspberry Pi Pico SDK
+# Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_executable(embarcatech-tarefa-freertos-2
-    main.c
+# Add executable. Default name is the project name, version 0.1
+
+add_executable(tarefa-freertos-2-felipe_e_vitor 
+            tarefa-freertos-2-felipe_e_vitor.c
+            include/FreeRTOSConfig.h
+            include/ssd1306_i2c.c
 )
 
-target_include_directories(embarcatech-tarefa-freertos-2 PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}
-    ${CMAKE_CURRENT_LIST_DIR}/include
+pico_set_program_name(tarefa-freertos-2-felipe_e_vitor "tarefa-freertos-2-felipe_e_vitor")
+pico_set_program_version(tarefa-freertos-2-felipe_e_vitor "0.1")
+
+# Modify the below lines to enable/disable output over UART/USB
+pico_enable_stdio_uart(tarefa-freertos-2-felipe_e_vitor 0)
+pico_enable_stdio_usb(tarefa-freertos-2-felipe_e_vitor 1)
+
+# Add the standard library to the build
+target_link_libraries(tarefa-freertos-2-felipe_e_vitor
+        pico_stdlib
+        FreeRTOS-Kernel-Heap4  
+        hardware_i2c
+        hardware_pwm
+        hardware_gpio
+        hardware_adc
+        hardware_clocks
 )
 
-target_link_libraries(embarcatech-tarefa-freertos-2 
-    pico_stdlib 
-    FreeRTOS-Kernel-Heap4 
-    hardware_i2c
-    )
+# Add the standard include files to the build
+target_include_directories(tarefa-freertos-2-felipe_e_vitor PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/include
+        ${FREERTOS_PATH}/include
+        ${FREERTOS_PATH}/portable/ThirdParty/GCC/RP2040/include
+)
 
-pico_add_extra_outputs(embarcatech-tarefa-freertos-2)
+# Add any user requested libraries
+target_link_libraries(tarefa-freertos-2-felipe_e_vitor 
+        
+        )
 
-# if you have anything in "lib" folder then uncomment below - remember to add a CMakeLists.txt
-# file to the "lib" directory
-#add_subdirectory(lib)
+pico_add_extra_outputs(tarefa-freertos-2-felipe_e_vitor)
+
